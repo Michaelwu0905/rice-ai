@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    name: lint + test (py3.14)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.x"
+          python-version-file: ".python-version"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --dev
+
+      - name: Lint
+        run: uv run --no-sync ruff check src tests
+
+      - name: Test
+        run: uv run --no-sync pytest -q
+
+      - name: CLI smoke
+        run: |
+          uv run --no-sync rice-ai --version
+          uv run --no-sync rice-ai --help > /dev/null
+          # 没有 DEEPSEEK_API_KEY 时必须明确失败，而不是静默继续
+          if uv run --no-sync rice-ai digest --limit 1; then
+            echo "::error::digest should exit non-zero without DEEPSEEK_API_KEY"
+            exit 1
+          fi

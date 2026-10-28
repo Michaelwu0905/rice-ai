@@ -17,7 +17,10 @@ dependencies = [
 rice-ai = "rice_ai:main"
 
 [dependency-groups]
-dev = ["pytest>=8.3"]
+dev = [
+    "pytest>=8.3",
+    "ruff>=0.17.3,<0.18",
+]
 
 [build-system]
 requires = ["uv_build>=0.13.6,<0.14.0"]
