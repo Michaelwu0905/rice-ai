@@ -1,5 +1,7 @@
 # rice-ai
 
+[![CI](https://github.com/Michaelwu0905/rice-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Michaelwu0905/rice-ai/actions/workflows/ci.yml)
+
 专注 Linux ricing 的信息聚合 agent（第一阶段）。它抓取 **r/unixporn** 的优质 rice 帖，
 扒出正文、评论、截图配色和 dots 仓库，再用 **DeepSeek** 生成中文「rice 卡片」，直接彩色输出到终端。
 
@@ -143,9 +145,13 @@ systemctl --user enable --now rice-ai.timer
 ## 开发
 
 ```bash
-uv run pytest -q            # 62 个测试，全部走 fixture + stub，不联网
-uv run rice-ai fetch --window week   # 冒烟：只验证 Reddit 通道
+uv run pytest -q                      # 62 个测试，全部走 fixture + stub，不联网
+uv run ruff check src tests           # CI 同样会跑
+uv run rice-ai fetch --window week    # 冒烟：只验证 Reddit 通道
 ```
+
+CI（`.github/workflows/ci.yml`）在每次 push/PR 到 `main` 时跑：`uv sync --locked --dev` →
+`ruff check` → `pytest` → CLI 冒烟（含「无 key 必须非零退出」检查）。
 
 测试夹具 `tests/fixtures/` 是真实抓取的 feed，改动解析逻辑时可直接回放。
 
